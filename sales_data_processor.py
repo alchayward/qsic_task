@@ -24,13 +24,13 @@ schema = StructType([
 def process_sales_data(spark, store_ids, input_file, output_file):
     """
 
+    :param spark: spark session
     :param store_ids: which store ids to include in the sales profile
     :param input_file: file path to the TSV file
     :param output_file: file path to the JSON file
-    :param spark: spark session (default None)
     :return: None
 
-    In the case of missing values in the CSV, pipeline will fail
+    In the case of bad values in the CSV, pipeline will fail, rather than dropping rows.
     In the case of a store with no valid transactions, pipeline will return no data for this store.
     """
 
