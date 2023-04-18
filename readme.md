@@ -6,7 +6,9 @@ To run the pipeline and generate the sales profiles for sales_data.tsv:
 
 Create a python environment and install the requirements.
 
-run: `python sales_data_processor.py`
+run: 
+
+`python sales_data_processor.py`
 
 The resulting sales profile is in [sales_profile.json](sales_profiles.json)
 ## coverage report
@@ -14,6 +16,7 @@ The resulting sales profile is in [sales_profile.json](sales_profiles.json)
 [Coverage report is found here.](coverage_report/index.html)
 
 To generate (and run tests):
+
 `python -m pytest --cov-report=html:coverage_re --cov sales_data_processor`
 
 ## notes
