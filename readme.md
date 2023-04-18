@@ -19,8 +19,10 @@ To generate (and run tests):
 
 `python -m pytest --cov-report=html:coverage_re --cov sales_data_processor`
 
-The coverage test coveres the whole pipeline, but not the entire python file, as we don't test the script execution section explicitly.  
+The coverage test covers the whole pipeline, but not the entire python file, as we don't test the script execution section explicitly.  
 ## notes
+
+I made the choice to 1) drop rows with missing values (but log a warning), and to filter out rows with 0 units.  
 
 There is only some data validation here. More is always possible, but how much is appropriate depends on the providence of the data etc. 
 

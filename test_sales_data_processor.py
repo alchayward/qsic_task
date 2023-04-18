@@ -67,6 +67,7 @@ def test_normalize_product_name():
 
 def test_filter_negative_and_0_units(spark):
     """units must be positive or 0, negative values of unit must be filtered out."""
+
     store_ids = {1}
     test_data = [
         {"product_id": 0,
@@ -100,7 +101,7 @@ def test_filter_negative_and_0_units(spark):
     assert "coffee medium" in sales_profiles["1"]
 
 
-def test_empty_sales_data(spark):
+def test_empty_sales_data_is_valid(spark):
     """If the sales data is empty, the sales profile should be empty as well."""
     store_ids = {1}
     test_data = []
@@ -109,7 +110,7 @@ def test_empty_sales_data(spark):
         runner.run_pipeline(spark, store_ids)
         sales_profiles = runner.read_sales_report()
 
-    assert sales_profiles == {}
+    assert len(sales_profiles) == 0
 
 
 def test_malformed_data_error(spark):
@@ -128,7 +129,25 @@ def test_malformed_data_error(spark):
             runner.run_pipeline(spark, store_ids)
 
 
-def test_process_sales_data(spark):
+def test_rows_with_missing_data_are_dropped(spark, caplog):
+    store_ids = {1}
+    test_data = [
+        {"product_id": 0,
+         "store_id": 1,
+         "product_name": "coffee_large",
+         "units": None,
+         "transaction_id": 1,
+         "price": 1.0,
+         "timestamp": "2021-12-01 17:48:41.569057"}
+    ]
+    with PipelineRunner(test_data) as runner:
+        runner.run_pipeline(spark, store_ids)
+        sales_profiles = runner.read_sales_report()
+    assert len(sales_profiles) == 0
+    assert "Number of rows with null or missing values: 1" in caplog.text
+
+
+def test_process_sales_data_results_calculation(spark):
     store_ids = {1}
     test_data = [
         {"product_id": 0,

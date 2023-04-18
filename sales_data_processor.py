@@ -1,13 +1,22 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, udf
+from pyspark.sql.functions import col, udf, expr
 from pyspark.sql.types import StringType, IntegerType, StructField, StructType, FloatType, TimestampType
 import json
 
-
+import logging
+logger = logging.getLogger("SalesDataProcessor")
+logger.setLevel('WARN')
 def normalize_product_name(product_name):
     return product_name.replace("-", " ").replace("_", " ").lower()
 
 normalize_product_name_udf = udf(normalize_product_name, StringType())
+
+
+def has_null(*row):
+    return any(x is None for x in row)
+
+
+has_null_udf = udf(has_null, IntegerType())
 
 
 schema = StructType([
@@ -37,10 +46,16 @@ def process_sales_data(spark, store_ids, input_file, output_file):
     # Read the TSV file
     df = spark.read.csv(input_file, sep="\t", header=True, schema=schema, mode="FAILFAST")
 
+    null_check_expr = " OR ".join([f"{col_name} IS  NULL" for col_name in df.columns])
+    df = df.withColumn("has_null", expr(null_check_expr))
+    df_null_rows_count = df.filter(col("has_null")).agg({"has_null": "count"})
+
+    # drop rows with missing vals
+    df = df.filter(col("has_null") == False)
+
     # Normalize product names and filter out invalid transactions
     df = df.withColumn("product_name", normalize_product_name_udf(col("product_name"))) \
         .filter(col("units") > 0)
-
 
     # Filter for the selected store ids
     df = df.filter(col("store_id").isin(store_ids))
@@ -52,7 +67,6 @@ def process_sales_data(spark, store_ids, input_file, output_file):
 
     # Convert to Pandas DataFrame
     pdf = df.toPandas()
-
     # Compute the sales profiles
     pdf["units_sum_normalized"] = pdf.groupby("store_id")["units_sum"].transform(lambda x: x / x.sum())
 
@@ -68,10 +82,14 @@ def process_sales_data(spark, store_ids, input_file, output_file):
     with open(output_file, "w") as f:
         json.dump(sales_profiles, f, indent=2)
 
+    null_rows_count = df_null_rows_count.collect()[0][0]
+    if null_rows_count > 0:
+        logger.warning(f"Number of rows with null or missing values: {null_rows_count}")
+
 
 if __name__ == "__main__":
     store_ids = {1, 3}
-    input_file = "big_sales_data.tsv"
+    input_file = "sales_data.tsv"
     output_file = "sales_profiles.json"
 
     spark = SparkSession.builder \
