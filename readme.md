@@ -21,7 +21,7 @@ To generate (and run tests):
 
 ## notes
 
-There is only some data validation here. More is always possible, but depends on the providence of the data etc. 
+There is only some data validation here. More is always possible, but how much is appropriate depends on the providence of the data etc. 
 
 The question of what to do in various edge cases (e.g. no data for a specified store), depend really on the business case at hand, and cant be decided without wider consultation.
 
