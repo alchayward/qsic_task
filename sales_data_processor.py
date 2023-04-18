@@ -6,17 +6,13 @@ import json
 import logging
 logger = logging.getLogger("SalesDataProcessor")
 logger.setLevel('WARN')
+
+
 def normalize_product_name(product_name):
     return product_name.replace("-", " ").replace("_", " ").lower()
 
+
 normalize_product_name_udf = udf(normalize_product_name, StringType())
-
-
-def has_null(*row):
-    return any(x is None for x in row)
-
-
-has_null_udf = udf(has_null, IntegerType())
 
 
 schema = StructType([
