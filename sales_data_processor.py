@@ -61,7 +61,7 @@ def process_sales_data(spark, store_ids, input_file, output_file):
         .rename_axis(index=None, columns=None) \
         .to_dict(orient="index")
 
-    # Convert the keys of sales_profiles to strings
+    # Convert the keys (store ids) of sales_profiles to strings, as specified in the example schema
     sales_profiles = {str(k): v for k, v in sales_profiles.items()}
 
     # Write the result to a JSON file
