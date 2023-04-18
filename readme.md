@@ -19,6 +19,7 @@ To generate (and run tests):
 
 `python -m pytest --cov-report=html:coverage_re --cov sales_data_processor`
 
+The coverage test coveres the whole pipeline, but not the entire python file, as we don't test the script execution section explicitly.  
 ## notes
 
 There is only some data validation here. More is always possible, but how much is appropriate depends on the providence of the data etc. 
